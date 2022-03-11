@@ -1,6 +1,74 @@
 <?xml version="1.0" encoding="utf-8"?>
 <search>
   <entry>
+    <title>webpack --- entry points &amp; output</title>
+    <url>/2022/02/24/entry%20points%20&amp;%20output/</url>
+    <content><![CDATA[<h3 id="1、什么是Webpack"><a href="#1、什么是Webpack" class="headerlink" title="1、什么是Webpack"></a>1、什么是Webpack</h3><p>Webpack 是一个打包模块化 JavaScript 的工具，在 Webpack 里一切文件皆模块，通过 Loader 转换文件，通过 Plugin 注入钩子，最后输出由多个模块组合成的文件。Webpack 专注于构建模块化项目。<br><img src="http://webpack.wuhaolin.cn/1%E5%85%A5%E9%97%A8/img/1-2webpack.png"></p>
+<p>一切文件：JavaScript、CSS、SCSS、图片、模板，在 Webpack 眼中都是一个个模块，这样的好处是能清晰的描述出各个模块之间的依赖关系，以方便 Webpack 对模块进行组合和打包。 经过 Webpack 的处理，最终会输出浏览器能使用的静态资源。</p>
+<p>Webpack 具有很大的灵活性，能配置如何处理文件，大致使用如下：</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">module.exports = &#123;</span><br><span class="line">  // 所有模块的入口，Webpack 从入口开始递归解析出所有依赖的模块</span><br><span class="line">  entry: <span class="string">&#x27;./app.js&#x27;</span>,</span><br><span class="line">  output: &#123;</span><br><span class="line">    // 把入口所依赖的所有模块打包成一个文件 bundle.js 输出 </span><br><span class="line">    filename: <span class="string">&#x27;bundle.js&#x27;</span></span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="2、Entry"><a href="#2、Entry" class="headerlink" title="2、Entry"></a>2、Entry</h3><p>entry是配置模块的入口，可抽象成输入，Webpack 执行构建的第一步将从入口开始搜寻及递归解析出所有入口依赖的模块。</p>
+<p>entry 配置是必填的，若不填则将导致 Webpack 报错退出。</p>
+<h4 id="2-1-Entry-类型"><a href="#2-1-Entry-类型" class="headerlink" title="2.1 Entry 类型"></a>2.1 Entry 类型</h4><p>Entry 类型可以是以下三种中的一种或者相互组合：</p>
+<table>
+<thead>
+<tr>
+<th>类型</th>
+<th>例子</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>string</td>
+<td><code>'./app/entry'</code></td>
+<td>入口模块的文件路径，可以是相对路径。</td>
+</tr>
+<tr>
+<td>array</td>
+<td><code>['./app/entry1', './app/entry2']</code></td>
+<td>入口模块的文件路径，可以是相对路径。</td>
+</tr>
+<tr>
+<td>object</td>
+<td><code>&#123; a: './app/entry-a', b: ['./app/entry-b1', './app/entry-b2']&#125;</code></td>
+<td>配置多个入口，每个入口生成一个 Chunk</td>
+</tr>
+</tbody>
+</table>
+如果是 array 类型，则搭配 output.library 配置项使用时，只有数组里的最后一个入口文件的模块会被导出。
+
+
+<h3 id="3、Output"><a href="#3、Output" class="headerlink" title="3、Output"></a>3、Output</h3><p>output 配置如何输出最终想要的代码。output 是一个 object，里面包含一系列配置项，下面分别介绍它们。</p>
+<h4 id="3-1-filename"><a href="#3-1-filename" class="headerlink" title="3.1 filename"></a>3.1 filename</h4><p> 配置输出文件的名称<br> <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">filename: &#x27;bundle.js&#x27; //一个Chunk</span><br><span class="line">filename: &#x27;[name].js&#x27; //多个Chunk</span><br></pre></td></tr></table></figure></p>
+<h4 id="什么是Chunk？"><a href="#什么是Chunk？" class="headerlink" title="什么是Chunk？"></a><em>什么是Chunk？</em></h4><p>Webpack 会为每个生成的 Chunk 取一个名称，Chunk 的名称和 Entry 的配置有关：<br>如果 entry 是一个 string 或 array，就只会生成一个 Chunk，这时 Chunk 的名称是 main；<br>如果 entry 是一个 object，就可能会出现多个 Chunk，这时 Chunk 的名称是 object 键值对里键的名称。</p>
+<p>代码里的 [name] 代表用内置的 name 变量去替换[name]，这时你可以把它看作一个字符串模块函数， 每个要输出的 Chunk 都会通过这个函数去拼接出输出的文件名称。<br> <code> id    Chunk 的唯一标识，从0开始</code><br> <code> name    Chunk 的名称</code><br> <code> chunkhash    Chunk 内容的 Hash 值 </code><br><code>contenthash  模块内容的哈希</code></p>
+<h4 id="3-2-path"><a href="#3-2-path" class="headerlink" title="3.2 path"></a>3.2 path</h4><p>output.path 配置输出文件存放在本地的目录，必须是 string 类型的绝对路径。通常通过 Node.js 的 path 模块去获取绝对路径：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">path: path.resolve(__dirname, &#x27;dist_[hash]&#x27;)</span><br></pre></td></tr></table></figure>
+
+<h4 id="3-3-publicPath"><a href="#3-3-publicPath" class="headerlink" title="3.3 publicPath"></a>3.3 publicPath</h4><p>output.publicPath 配置发布到线上资源的 URL 前缀，为string 类型。 默认值是空字符串 ‘’，即使用相对路径。</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">filename:&#x27;[name]_[chunkhash:8].js&#x27;</span><br><span class="line">publicPath: &#x27;https://cdn.example.com/assets/&#x27;</span><br></pre></td></tr></table></figure>
+<p>时发布到线上的 HTML 在引入 JavaScript 文件时就需要：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">&lt;script src=&#x27;https://cdn.example.com/assets/a_12345678.js&#x27;&gt;&lt;/script&gt;</span><br></pre></td></tr></table></figure>
+
+<h4 id="3-4-chunkFilename"><a href="#3-4-chunkFilename" class="headerlink" title="3.4 chunkFilename"></a>3.4 chunkFilename</h4><p>output.chunkFilename 配置无入口的 Chunk 在输出时的文件名称。 chunkFilename 和上面的 filename 非常类似，但 chunkFilename 只用于指定在运行过程中生成的 Chunk 在输出时的文件名称。<br>常见的会在运行时生成 Chunk 场景有在使用 CommonChunkPlugin、使用 import(‘path/to/module’) 动态加载等时。 chunkFilename 支持和 filename 一致的内置变量。</p>
+<h4 id="3-5-crossOriginLoading"><a href="#3-5-crossOriginLoading" class="headerlink" title="3.5 crossOriginLoading"></a>3.5 crossOriginLoading</h4><p>Webpack 输出的部分代码块可能需要异步加载，而异步加载是通过 JSONP 方式实现的。 JSONP 的原理是动态地向 HTML 中插入一个 <script src="url"></script> 标签去加载异步资源。 output.crossOriginLoading 则是用于配置这个异步插入的标签的 crossorigin 值。</p>
+<p>script 标签的 crossorigin 属性可以取以下值：</p>
+<p>anonymous(默认) 在加载此脚本资源时不会带上用户的 Cookies；<br>use-credentials 在加载此脚本资源时会带上用户的 Cookies。<br>通常用设置 crossorigin 来获取异步加载的脚本执行时的详细错误信息。</p>
+<h4 id="3-6-libraryTarget-和-library"><a href="#3-6-libraryTarget-和-library" class="headerlink" title="3.6 libraryTarget 和 library"></a>3.6 libraryTarget 和 library</h4><p>当用 Webpack 去构建一个可以被其他模块导入使用的库时需要用到它们。</p>
+<p>output.libraryTarget 配置以何种方式导出库。<br>output.library 配置导出库的名称。<br>它们通常搭配在一起使用。</p>
+<p>output.libraryTarget 是字符串的枚举类型，支持以下配置。<br><code>var (默认)<br>commonjs<br>commonjs2<br>this<br>window<br>global<br></code></p>
+<h4 id="libraryExport"><a href="#libraryExport" class="headerlink" title="libraryExport"></a><em>libraryExport</em></h4><p>output.libraryExport 配置要导出的模块中哪些子模块需要被导出。 它只有在 output.libraryTarget 被设置成 commonjs 或者 commonjs2 时使用才有意义。</p>
+<h4 id="3-7-clean"><a href="#3-7-clean" class="headerlink" title="3.7 clean"></a>3.7 clean</h4><p>清除dist文件夹</p>
+<blockquote>
+<p>以上只是 <code>output</code> 里常用的配置项，还有部分几乎用不上的配置项没有一一列举，你可以在 <a href="https://webpack.js.org/configuration/output/" target="_blank">Webpack 官方文档</a> 上查阅它们。</p>
+</blockquote>
+
+<h3 id="webpack常见面试问题"><a href="#webpack常见面试问题" class="headerlink" title="webpack常见面试问题"></a>webpack常见面试问题</h3><p>1.module、chunk 和 bundle<br>2.sourceMap<br>3.模块热更新<br>4.模块懒加载<br>5.长缓存、长缓存优化<br>6.Tree-sharking</p>
+]]></content>
+  </entry>
+  <entry>
     <title>first_blog</title>
     <url>/2022/01/04/first-blog/</url>
     <content><![CDATA[<p>2022年开始了，好好奋斗吧</p>
@@ -8,7 +76,7 @@
   </entry>
   <entry>
     <title>Hello World</title>
-    <url>/2022/01/06/hello-world/</url>
+    <url>/2022/03/11/hello-world/</url>
     <content><![CDATA[<p>Welcome to <a href="https://hexo.io/">Hexo</a>! This is your very first post. Check <a href="https://hexo.io/docs/">documentation</a> for more info. If you get any problems when using Hexo, you can find the answer in <a href="https://hexo.io/docs/troubleshooting.html">troubleshooting</a> or you can ask me on <a href="https://github.com/hexojs/hexo/issues">GitHub</a>.</p>
 <h2 id="Quick-Start"><a href="#Quick-Start" class="headerlink" title="Quick Start"></a>Quick Start</h2><h3 id="Create-a-new-post"><a href="#Create-a-new-post" class="headerlink" title="Create a new post"></a>Create a new post</h3><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ hexo new <span class="string">&quot;My New Post&quot;</span></span><br></pre></td></tr></table></figure>
 
